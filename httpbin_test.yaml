@@ -1,0 +1,58 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: httpbin
+  namespace: default
+spec:
+  tls:
+    - hosts:
+      - httpbin-test.cndy.org
+      secretName: cndy-tls
+  rules:
+    - host: httpbin-test.cndy.org
+      http: 
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: httpbin-test-svc
+              port:
+                number: 80
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin-test
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbin-test
+      author: wanglijuan
+  template:
+    metadata:
+      labels:
+        app: httpbin-test
+        author: wanglijuan
+    spec:
+      containers:
+        - name: httpbin-test
+          image: kennethreitz/httpbin:test
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin-test-svc
+  namespace: default
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+     app: httpbin-test
+     author: wanglijuan
